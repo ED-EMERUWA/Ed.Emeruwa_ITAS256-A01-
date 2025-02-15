@@ -5,3 +5,4 @@ certifi
 openai
 selenium
 python-dotenv
+undetected-chromedriver
