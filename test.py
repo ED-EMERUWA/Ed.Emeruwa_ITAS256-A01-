@@ -1,35 +1,45 @@
-from bs4 import BeautifulSoup
-import requests
-import certifi
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
-html_content = '''
-<div class="hi">
-    <div class="jobContainer sm:overflow-hidden">
-        <a href="/jobs/police"></a>
-        <a href="/jobs/pole"></a>
-        <a href="/jobs/lice"></a>
-    </div>
-</div>
-'''
+# Set up Firefox WebDriver
+browser = webdriver.Firefox()
 
-URL = f"https://jobs.techtalent.ca/?k=information%20technology%E2%A6%81&%E2%A6%81l=British%20Columbia,%20Canada"
+# Open the job website
+browser.get("https://jobs.techtalent.ca/?k=information%20technology%E2%A6%81&%E2%A6%81l=British%20Columbia,%20Canada")
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
-headers = {'User-Agent':USER_AGENT}
-page = requests.get(URL, headers=headers, verify=certifi.where())
+jobs = []  # List to store job data
 
-jobs = []
+try:
+    # Find all job containers
+    job_containers = browser.find_elements(By.CLASS_NAME, "jobContainer")
 
-soup = BeautifulSoup(page.content,"html.parser")
+    for job_container in job_containers:
+        # Find all job posts inside this container
+        all_jobs = job_container.find_elements(By.CLASS_NAME, "job-post-summary")
+
+        for job in all_jobs:
+            job_title = job.find_element(By.CLASS_NAME, "job-post-summary__title").text.strip()
+            job_title = job_title if job_title else "Job title not provided"
 
 
-# Find the div with class 'jobContainer sm:overflow-hidden'
-job_container = soup.find('div', class_='jobContainer sm:overflow-hidden')
+            job_company = job.find_element(By.CSS_SELECTOR, "span.flex.items-center").text.strip()
+            job_company = job_company if job_company else "Company name not available"
 
-# Extract the content inside the jobContainer
-if job_container:
-    links = job_container.find_all('a')  # Find all <a> tags inside it
-    for link in links:
-        print(link['href'])  # Print the href attribute of each <a> tag
-else:
-    print("No job container found.")
+            job_location = job.find_element(By.CLASS_NAME, "flex.flex-shrink.items-center").text.strip()
+            job_location = job_location if job_location else "Location details missing"
+
+            print(f"Job Title: {job_title}")
+            print(f"Company: {job_company}")
+            print(f"Location: {job_location}")
+            
+
+
+            # Print job title
+            print(job_title)
+
+except Exception as e:
+    print("Error:", e)
+
+finally:
+    # Close the browser
+    browser.quit()
