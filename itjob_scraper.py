@@ -12,6 +12,23 @@ import certifi
 import requests
 from bs4 import BeautifulSoup
 import json
+from datetime import datetime, timedelta
+
+def is_within_two_weeks(date_str):
+    # Define the format of the date (adjust if needed based on the exact format of the website)
+    date_format = "%B %d %Y"  # Example: "February 14 2025"
+
+    # Convert the date from the tag into a datetime object
+    date_obj = datetime.strptime(date_str, date_format)
+
+    # Get the current date
+    current_date = datetime.now()
+
+    # Calculate the date 2 weeks ago from today
+    two_weeks_ago = current_date - timedelta(weeks=2)
+
+    # Check if the date from the tag is within the last two weeks
+    return date_obj >= two_weeks_ago
 
 # Base URL for scraping job listings from multiple pages
 URLS = [f"https://www.itjobs.ca/en/search-jobs/?location=British+Columbia&location-id=BC&location-type=2&search=1&sort_order=1&page={i}" for i in range(1, 4)]
@@ -41,14 +58,18 @@ def fetch_job_data(URL):
         job_description = job.find("p", class_="offer-description").text.strip()
         job_company = job.find("a", class_="company").text.strip()
         job_location = job.find("a", class_="location").text.strip()
-        
-        # Append the extracted job data to the list
-        job_list.append({
-            "Position": job_title,
-            "Company": job_company,
-            "Location": job_location,
-            "Description": job_description
-        })
+        job_date = job.find("a", class_="date").text.strip()
+        print(job_date)
+
+
+        if is_within_two_weeks(job_date):
+            # Append the extracted job data to the list
+            job_list.append({
+                "Position": job_title,
+                "Company": job_company,
+                "Location": job_location,
+                "Description": job_description
+            })
     
     return job_list
 

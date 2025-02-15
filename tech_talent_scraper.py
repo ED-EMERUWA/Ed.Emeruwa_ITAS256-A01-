@@ -5,7 +5,6 @@ Description:
 This script scrapes job postings from the Tech Talent website, refines job descriptions using OpenAI's GPT model, 
 and stores job details in a JSON file.
 
-
 """
 
 from selenium import webdriver
